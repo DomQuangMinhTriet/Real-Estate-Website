@@ -8,63 +8,65 @@
 
 ### 1.1. Cấu hình User, Phân quyền (Auth) & Hệ thống User & Role (Identity)
 
-* [ ] Tạo file `database/01_setup_users.sql`.
-* [ ] Viết script tạo bảng `public.users` liên kết với `auth.users` của Supabase.
-* [ ] Khai báo Enum `user_role` (`'admin'`, `'agent'`, `'member'`).
-* [ ] Chạy file `01_setup_users.sql` trên Supabase.
-* [ ] **Table profiles**: Gồm `id`, `updated_at`, `username`, `full_name`, `avatar_url`, `role` (enum), `phone`.
-* [ ] **Trigger tự động**: Viết Function và Trigger trên Supabase để khi một User đăng ký qua Auth, dữ liệu tự động chèn vào bảng `profiles`.
-* [ ] **Bảng agent_profiles**: Lưu thông tin chuyên sâu của Agent (số năm kinh nghiệm, khu vực phụ trách, bằng cấp).
+* [x] Tạo file `database/01_setup_users.sql`.
+* [x] Viết script tạo bảng `public.users` liên kết với `auth.users` của Supabase.
+* [x] Khai báo Enum `user_role` (`'admin'`, `'agent'`, `'member'`).
+* [x] Chạy file `01_setup_users.sql` trên Supabase.
+* [x] **Table profiles**: Gồm `id`, `updated_at`, `username`, `full_name`, `avatar_url`, `role` (enum), `phone`.
+* [x] **Trigger tự động**: Viết Function và Trigger trên Supabase để khi một User đăng ký qua Auth, dữ liệu tự động chèn vào bảng `profiles`.
+* [x] **Bảng agent_profiles**: Lưu thông tin chuyên sâu của Agent (số năm kinh nghiệm, khu vực phụ trách, bằng cấp).
 
 ### 1.2. Tạo bảng Quản lý Dự án & Cấu trúc Bất động sản cốt lõi (The Core)
 
-* [ ] Tạo file `database/02_setup_projects.sql`.
-* [ ] Viết script tạo bảng `projects` (`theme_id`, `name`,...).
-* [ ] Tạo file `database/03_setup_properties.sql`.
-* [ ] Viết script tạo bảng `properties`.
-* [ ] **[QUAN TRỌNG]** Khai báo cột `attributes` với kiểu dữ liệu `JSONB` để lưu linh hoạt Căn hộ/Nhà phố.
-* [ ] Chạy file 02 và 03 trên Supabase.
-* [ ] **Bảng categories**: Để bạn có thể thêm các loại hình khác sau này (Căn hộ, Đất nền...).
-* [ ] **Bảng properties (Chi tiết CRUD)**:
-* [ ] Ràng buộc (Constraints): `price > 0`, `slug` là duy nhất.
-* [ ] Metadata: `created_by` (Lưu ID người tạo - Admin/Agent).
-* [ ] Thuộc tính động: Thiết lập Index cho cột `attributes` (JSONB) để tìm kiếm nhanh.
-
-
-* [ ] **Bảng property_media**: Lưu danh sách ảnh/video cho mỗi BĐS (tránh dồn quá nhiều text vào bảng chính).
+* [x] Tạo file `database/02_setup_projects.sql`.
+* [x] Viết script tạo bảng `projects` (`theme_id`, `name`,...).
+* [x] Tạo file `database/03_setup_properties.sql`.
+* [x] Viết script tạo bảng `properties`.
+* [x] **[QUAN TRỌNG]** Khai báo cột `attributes` với kiểu dữ liệu `JSONB` để lưu linh hoạt Căn hộ/Nhà phố.
+* [x] Chạy file 02 và 03 trên Supabase.
+* [x] **Bảng categories**: Để bạn có thể thêm các loại hình khác sau này (Căn hộ, Đất nền...).
+* [x] **Bảng properties (Chi tiết CRUD)**:
+* [x] Ràng buộc (Constraints): `price > 0`, `slug` là duy nhất.
+* [x] Metadata: `created_by` (Lưu ID người tạo - Admin/Agent).
+* [x] Thuộc tính động: Thiết lập Index cho cột `attributes` (JSONB) để tìm kiếm nhanh.
+* [x] **Bảng property_media**: Lưu danh sách ảnh/video cho mỗi BĐS (tránh dồn quá nhiều text vào bảng chính).
 
 ### 1.3. Tạo bảng CRM (Leads) & Agent
 
-* [ ] Tạo file `database/04_setup_leads.sql`.
-* [ ] Viết script tạo bảng `leads` (khách hàng điền form). Set Foreign Key `agent_id` và `property_id`.
-* [ ] Viết script tạo bảng `agent_requests` (chứa cột `request_data` JSONB để lưu form linh hoạt).
-* [ ] Chạy file 04.
+* [x] Tạo file `database/04_setup_leads.sql`.
+* [x] Viết script tạo bảng `leads` (khách hàng điền form). Set Foreign Key `agent_id` và `property_id`.
+* [x] Viết script tạo bảng `agent_requests` (chứa cột `request_data` JSONB để lưu form linh hoạt).
+* [x] Chạy file 04.
 
 ### 1.4. Tạo bảng Diễn đàn & Đa ngôn ngữ
 
-* [ ] Tạo file `database/05_setup_forum.sql`.
-* [ ] Viết script tạo bảng `forum_posts` và `forum_comments`.
-* [ ] Tạo file `database/06_setup_translations.sql`.
-* [ ] Viết script tạo bảng `translations` lưu cặp Key-Value.
-* [ ] Chạy file 05 và 06.
+* [x] Tạo file `database/05_setup_forum.sql`.
+* [x] Viết script tạo bảng `forum_posts` và `forum_comments`.
+* [x] Tạo file `database/06_setup_translations.sql`.
+* [x] Viết script tạo bảng `translations` lưu cặp Key-Value.
+* [x] Chạy file 05 và 06.
 
 ### 1.5. Thiết lập Bảo mật CSDL (Row Level Security - RLS) - "Bức tường lửa"
 
-* [ ] Tạo file `database/07_setup_rls_policies.sql`.
-* [ ] Viết Policy: Bật RLS cho tất cả các bảng.
-* [ ] Viết Policy cho bảng `properties`: Admin (ALL). Agent (SELECT, UPDATE WHERE `agent_id = auth.uid()`).
-* [ ] Viết Policy cho bảng `leads`: Tương tự như properties.
-* [ ] Chạy file 07.
-* [ ] **Policy properties**:
-* [ ] SELECT: Public (mọi người đều xem được bài published).
-* [ ] INSERT: Chỉ authenticated và role là Admin hoặc Agent.
-* [ ] UPDATE/DELETE: Chỉ Admin hoặc người có id trùng với `created_by`.
+* [x] Tạo file `database/07_setup_rls_policies.sql`.
+* [x] Viết Policy: Bật RLS cho tất cả các bảng.
+* [x] Viết Policy cho bảng `properties`: Admin (ALL). Agent (SELECT, UPDATE WHERE `agent_id = auth.uid()`).
+* [x] Viết Policy cho bảng `leads`: Tương tự như properties.
+* [x] Chạy file 07.
+* [x] **Policy properties**:
+* [x] SELECT: Public (mọi người đều xem được bài published).
+* [x] INSERT: Chỉ authenticated và role là Admin hoặc Agent.
+* [x] UPDATE/DELETE: Chỉ Admin hoặc người có id trùng với `created_by`.
 
 
-* [ ] **Policy leads**:
-* [ ] INSERT: Public (khách điền form).
-* [ ] SELECT: Admin hoặc Agent có id trùng với `agent_id` của lead đó.
+* [x] **Policy leads**:
+* [x] INSERT: Public (khách điền form).
+* [x] SELECT: Admin hoặc Agent có id trùng với `agent_id` của lead đó.
 
+### 1.6. Chốt sổ Giai đoạn 1 (Documentation)
+
+* [x] Viết tài liệu `docs/DATABASE_SCHEMA.md` giải thích cấu trúc bảng, kiểu dữ liệu JSONB và RLS Policies.
+* [x] Tổng kết Database Schema, RLS và Triggers vào file `docs/PHASE_1_DBO.md`.
 
 
 ---
@@ -108,6 +110,7 @@
 ### 2.4. Xây dựng Controllers, Logic Core (Nhạc trưởng) & Chi tiết CRUD tương tác
 
 * [ ] Tạo `backend/src/controllers/property.controller.ts`.
+* [ ] Tạo `backend/src/controllers/project.controller.ts`.
 * [ ] Hàm `createProperty`: Nhận JSON data, parse phần dữ liệu linh hoạt nhét vào cột `attributes` (JSONB) trước khi đẩy xuống Supabase.
 * [ ] Hàm `getProperties`: Thêm điều kiện lọc `agent_id` nếu người request là Agent.
 * [ ] Tạo `backend/src/controllers/forum.controller.ts`.
@@ -138,10 +141,12 @@
 ### 2.7. Xây dựng Routes (Định tuyến API)
 
 * [ ] Tạo `backend/src/routes/property.routes.ts`: Map endpoint với Controller, gắn middleware auth/role vào.
+* [ ] Tạo `backend/src/routes/project.routes.ts`.
 * [ ] Tạo `backend/src/routes/index.ts`: Gom toàn bộ routes vào tiền tố `/api`. Map vào `server.ts`.
 
 ### 2.8. Chốt sổ Giai đoạn 2 (Documentation)
 * [ ] Tổng kết danh sách API, luồng Middlewares và Error Handling vào file `docs/PHASE_2_BUS.md`.
+* [ ] Cập nhật tài liệu `docs/API_REFERENCE.md` cho các API đã hoàn thiện.
 
 ---
 
@@ -186,6 +191,7 @@
 
 ### 3.5. Chốt sổ Giai đoạn 3 (Documentation)
 * [ ] Tài liệu hóa luồng hoạt động của Admin/Agent Dashboard và Phân quyền UI vào file `docs/PHASE_3_GUI_ADMIN.md`.
+* [ ] Cập nhật tài liệu hướng dẫn sử dụng cơ bản `docs/USER_MANUAL.md` cho Admin và Agent.
 
 ---
 
@@ -230,6 +236,7 @@
 
 ### 4.6. Chốt sổ Giai đoạn 4 (Documentation)
 * [ ] Ghi chú lại logic hoạt động của Multi-Theme Engine, Lazy Loading, và cấu hình Resolver vào file `docs/PHASE_4_GUI_THEMES.md`.
+* [ ] Hoàn thiện `docs/THEME_DEVELOPMENT_GUIDE.md` hướng dẫn cách tạo theme mới.
 
 ---
 
@@ -267,3 +274,5 @@
 
 ### 5.6. Chốt sổ Giai đoạn 5 (Documentation)
 * [ ] Hoàn thiện tài liệu nghiệm thu (Checklist Testing, Config Vercel/Railway) vào file `docs/PHASE_5_DEPLOY_QA.md`.
+* [ ] Cập nhật hướng dẫn triển khai lên Vercel và Railway vào `docs/DEPLOYMENT.md`.
+* [ ] Rà soát, duyệt lại và đóng băng tất cả các tài liệu hệ thống trước khi Go-live.

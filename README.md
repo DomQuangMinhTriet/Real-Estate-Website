@@ -46,32 +46,40 @@ Dự án tuân thủ nghiêm ngặt mô hình phân tách 3 lớp:
 
 ## 📂 Cấu trúc thư mục (Project Structure)
 
+```text
 REAL-ESTATE-PLATFORM/
+├── docs/         # Tài liệu dự án (API, Database, Hướng dẫn sử dụng)
 ├── database/     # SQL Scripts & RLS Policies (DBO)
 ├── backend/      # Express API, Middlewares, Services (BUS)
 └── frontend/     # Angular App, Theme Engine, Admin Dashboard (GUI)
-🚀 Cài đặt (Setup)
-1. Database
-Chạy các script SQL trong thư mục /database trên SQL Editor của Supabase theo thứ tự đánh số.
+```
 
-2. Backend
-cd backend
-npm install
+---
+
+🚀 Cài đặt (Setup)
+### 1. Database
+Chạy các script SQL trong thư mục `/database` trên SQL Editor của Supabase theo thứ tự đánh số.
+
+### 2. Backend
+```bash
+cd backend && npm install
 # Tạo file .env và điền các API Keys (Supabase, Cloudinary, Resend)
 npm run dev
-3. Frontend
-cd frontend
-npm install
+```
+
+### 3. Frontend
+```bash
+cd frontend && npm install
 ng serve
+```
+
+---
+
 📋 Roadmap & Checklist
 Dự án được thực hiện theo quy trình chuyên nghiệp bao gồm 5 giai đoạn chính:
 
-Giai đoạn 1: Khởi tạo DBO & RLS bảo mật tại gốc.
-
-Giai đoạn 2: Xây dựng BUS & Global Error Handling.
-
-Giai đoạn 3: Phát triển GUI Admin & Agent Dashboard.
-
-Giai đoạn 4: Triển khai Multi-Theme Engine & UI/UX.
-
-Giai đoạn 5: QA, Security Testing & Go-live.
+* **Giai đoạn 1: DBO** - Khởi tạo Database Schema, phân quyền và bảo mật RLS tại gốc (Supabase).
+* **Giai đoạn 2: BUS** - Xây dựng API Nhạc trưởng, Core Logic & Global Error Handling (Node.js).
+* **Giai đoạn 3: GUI Admin** - Phát triển Dashboard quản trị phân quyền cho Admin & Agent (Angular).
+* **Giai đoạn 4: GUI Themes** - Triển khai Multi-Theme Engine, SEO & trải nghiệm người dùng tối ưu.
+* **Giai đoạn 5: Deploy & QA** - Kiểm thử bảo mật, QA và Go-live (Vercel & Railway).
