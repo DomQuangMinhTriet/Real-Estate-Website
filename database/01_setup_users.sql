@@ -23,9 +23,18 @@ CREATE TABLE public.agent_profiles (
 -- Trigger tự động: Chèn dữ liệu vào bảng profiles khi user đăng ký qua Supabase Auth
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+    default_role public.user_role := 'member'::public.user_role;
 BEGIN
+    -- Gán an toàn: Chỉ đổi role nếu metadata thực sự có chứa giá trị hợp lệ
+    IF new.raw_user_meta_data->>'role' = 'admin' THEN
+        default_role := 'admin'::public.user_role;
+    ELSIF new.raw_user_meta_data->>'role' = 'agent' THEN
+        default_role := 'agent'::public.user_role;
+    END IF;
+
     INSERT INTO public.profiles (id, full_name, role)
-    VALUES (new.id, new.raw_user_meta_data->>'full_name', COALESCE((new.raw_user_meta_data->>'role')::user_role, 'member'::user_role));
+    VALUES (new.id, new.raw_user_meta_data->>'full_name', default_role);
     RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

@@ -5,7 +5,7 @@
 Tài liệu này tổng kết các thành quả đã đạt được trong Giai đoạn 1 của dự án Pro-RealEstate, tập trung vào việc thiết lập Cơ sở dữ liệu (Supabase PostgreSQL), thiết kế lược đồ, phân quyền và bảo mật tại gốc (Row Level Security).
 
 ## 1. Danh sách Database Scripts đã thực thi
-Hệ thống cơ sở dữ liệu đã được triển khai đầy đủ thông qua 7 tệp script SQL theo thứ tự chuẩn:
+Hệ thống cơ sở dữ liệu đã được triển khai đầy đủ thông qua 8 tệp script SQL theo thứ tự chuẩn:
 
 1.  `01_setup_users.sql`: Cấu hình Enum `user_role`, bảng `profiles`, `agent_profiles` và Trigger đồng bộ Supabase Auth.
 2.  `02_setup_projects.sql`: Khởi tạo bảng `projects` quản lý thông tin dự án, cấu hình Theme ID.
@@ -14,12 +14,14 @@ Hệ thống cơ sở dữ liệu đã được triển khai đầy đủ thông
 5.  `05_setup_forum.sql`: Khởi tạo bảng `forum_posts` và `forum_comments` hỗ trợ tính năng duyệt (Pending/Approved).
 6.  `06_setup_translations.sql`: Tạo cấu trúc lưu trữ đa ngôn ngữ linh hoạt dạng Key-Value (Polymorphic association).
 7.  `07_setup_rls_policies.sql`: Thiết lập và kích hoạt bảo mật mức dòng (RLS).
+8.  `08_setup_logs.sql`: Thiết lập bảng `system_logs` theo dõi nhật ký hoạt động hệ thống kèm RLS cho Admin.
 
 ## 2. Điểm nhấn Kiến trúc (Key Architectural Highlights)
 
 ### 2.1. Tự động hóa Quản lý Người dùng (Auth Triggers)
 - Đã thiết lập Trigger `on_auth_user_created` và hàm `handle_new_user()`.
 - **Luồng hoạt động:** Khi một người dùng mới đăng ký qua module Authentication của Supabase, trigger sẽ tự động đọc dữ liệu từ `raw_user_meta_data`, sau đó tự động khởi tạo một bản ghi tương ứng trong bảng `public.profiles` kèm theo Role mặc định là `member`.
+- **Tính Ổn định (Robustness):** Cấu trúc hàm (Function) đã được tối ưu để xử lý an toàn (safe-cast) các trường hợp siêu dữ liệu (metadata) trống (Ví dụ: khi Admin tạo user trực tiếp từ giao diện Dashboard), khắc phục triệt để lỗi 500 Internal Server Error do ép kiểu Enum.
 
 ### 2.2. Dữ liệu linh hoạt với cấu trúc JSONB
 - Cột `attributes` trong bảng `properties` đã được ứng dụng kiểu dữ liệu **JSONB**.

@@ -1,0 +1,248 @@
+# 📖 API Reference (Pro-RealEstate)
+
+Base URL: `http://localhost:5000/api` (Đổi thành URL thực tế khi lên Production)
+
+> **Lưu ý Authentication**: Các API yêu cầu `[Auth]` cần đính kèm header:
+> `Authorization: Bearer <your_jwt_token>`
+
+## 0. Authentication (Xác thực)
+
+### 0.1 Đăng ký tài khoản (Register)
+* **Endpoint:** `POST /auth/register`
+* **Body (JSON):** `{ "email": "user@gmail.com", "password": "password123", "full_name": "Nguyễn Văn A" }`
+* **Lưu ý:** Hệ thống sẽ tự động gửi Email xác nhận tới địa chỉ người dùng.
+
+### 0.2 Đăng nhập (Login)
+* **Endpoint:** `POST /auth/login`
+* **Body (JSON):** `{ "email": "user@gmail.com", "password": "password123" }`
+* **Response:** Trả về đối tượng `session` chứa `access_token` (JWT).
+
+### 0.3 Đăng xuất (Logout) `[Auth]`
+* **Endpoint:** `POST /auth/logout`
+* **Lưu ý:** Client cần chủ động xóa token lưu trong LocalStorage sau khi gọi API này thành công.
+
+### 0.4 Quên mật khẩu (Forgot Password)
+* **Endpoint:** `POST /auth/forgot-password`
+* **Body (JSON):** `{ "email": "user@gmail.com" }`
+* **Lưu ý:** Gửi link reset mật khẩu qua email. Link này sẽ trỏ về màn hình `/reset-password` của Frontend.
+
+### 0.5 Đặt lại mật khẩu mới (Reset Password) `[Auth]`
+* **Endpoint:** `POST /auth/reset-password`
+* **Body (JSON):** `{ "new_password": "StrongPassword123!" }`
+* **Lưu ý:** Cần đính kèm Token (được trích xuất từ link email) vào Header Authorization.
+
+---
+
+## 1. Quản lý Hồ sơ (Profile)
+
+### 1.1 Lấy thông tin cá nhân `[Auth]`
+* **Endpoint:** `GET /profiles/me`
+
+### 1.2 Cập nhật thông tin cá nhân `[Auth]`
+* **Endpoint:** `PUT /profiles/me`
+* **Body (JSON):** `{ "full_name": "Tên Mới", "phone": "090123", "experience_years": 5 }`
+
+### 1.3 Quản lý Người dùng `[Auth: Admin]`
+* **Lấy danh sách Users:** `GET /profiles`
+* **Đổi Role / Phân quyền:** `PUT /profiles/:id/role`
+    *   Body: `{ "role": "admin" }` (Các role: `'admin'`, `'agent'`, `'member'`)
+
+---
+
+## 2. Properties (Bất động sản)
+
+### 2.1 Lấy danh sách Bất động sản
+* **Endpoint:** `GET /properties`
+* **Query Params:** 
+  * `page`, `limit`: Dùng cho Phân trang (Mặc định page=1, limit=10).
+  * `manage=true`: Lọc bài của riêng Agent đang đăng nhập.
+  * `category_id`, `project_id`, `min_price`, `max_price`, `search`: Bộ lọc tìm kiếm.
+* **Response:** Trả về danh sách `data` và cấu trúc phân trang `meta: { total, page, limit }`.
+
+### 2.2 Lấy chi tiết Bất động sản
+* **Endpoint:** `GET /properties/:slug`
+* **Response:** Trả về Object chi tiết BĐS kèm danh sách hình ảnh `property_media` và thông tin `categories`.
+
+### 2.3 Đăng Bất động sản mới `[Auth: Admin, Agent]`
+* **Endpoint:** `POST /properties`
+* **Body (JSON):**
+```json
+{
+  "project_id": "uuid",
+  "category_id": 1,
+  "title": "Căn hộ Vinhome",
+  "description": "View hồ đẹp",
+  "price": 2500000000,
+  "attributes": { "bedrooms": 3, "pool": true } // Hoặc stringified JSON
+}
+```
+
+### 1.4 Cập nhật & Xóa Bất động sản `[Auth: Admin, Agent]`
+* **Cập nhật:** `PUT /properties/:id` (Gửi lên các field cần đổi).
+* **Xóa mềm (Soft Delete):** `DELETE /properties/:id`. Trả về `{ "status": "success", "message": "Property deleted successfully" }`.
+
+### 1.5 Quản lý Danh mục (Categories)
+*   **Lấy danh sách:** `GET /properties/categories`
+*   **Tạo mới `[Auth: Admin]`:** `POST /properties/categories`
+    *   Body: `{ "name": "Biệt thự nghỉ dưỡng" }`
+*   **Cập nhật `[Auth: Admin]`:** `PUT /properties/categories/:id`
+    *   Body: `{ "name": "Tên mới" }`
+*   **Xóa `[Auth: Admin]`:** `DELETE /properties/categories/:id`
+
+### 1.6 Xóa hình ảnh Bất động sản `[Auth: Admin, Agent]`
+* **Endpoint:** `DELETE /properties/media/:mediaId`
+
+### 1.7 Đặt ảnh làm Ảnh đại diện (Thumbnail) `[Auth: Admin, Agent]`
+* **Endpoint:** `PUT /properties/media/:mediaId/thumbnail`
+
+---
+
+## 2. Projects (Dự án & Theme)
+
+*   **Lấy danh sách:** `GET /projects`
+*   **Tạo mới `[Auth: Admin]`:** `POST /projects`
+    *   Body: `{ "name": "...", "theme_id": "luxury", "description": "..." }`
+*   **Cập nhật `[Auth: Admin]`:** `PUT /projects/:id`
+*   **Xóa `[Auth: Admin]`:** `DELETE /projects/:id`
+
+---
+
+## 3. Leads (Khách hàng & CRM)
+
+### 3.1 Khách hàng Gửi Form Liên Hệ
+* **Endpoint:** `POST /leads`
+* **Logic:** Tự động gửi Email cho Agent phụ trách, đồng thời phát tín hiệu Socket.io `new_lead`.
+* **Body (JSON):**
+```json
+{
+  "customer_name": "Nguyễn Văn A",
+  "customer_phone": "0901234567",
+  "message": "Tôi muốn xem nhà",
+  "property_id": "uuid",
+  "agent_id": "uuid"
+}
+```
+
+### 4.2 Lấy danh sách Khách hàng `[Auth: Admin, Agent]`
+* **Endpoint:** `GET /leads`
+* **Lưu ý:** Agent chỉ thấy khách của mình. Admin thấy toàn bộ.
+
+### 4.3 Cập nhật Trạng thái & Ghi chú Khách hàng `[Auth: Admin, Agent]`
+* **Endpoint:** `PUT /leads/:id`
+* **Body (JSON):** `{ "status": "contacted", "notes": "Khách hẹn xem nhà lúc 9h sáng thứ 7" }`
+
+### 4.4 Thành viên đăng ký làm Môi giới `[Auth]`
+* **Endpoint:** `POST /leads/agent-requests`
+* **Body (JSON):** `{ "request_data": { "experience_years": 3, "area": "Quận 1" } }`
+* **Lưu ý:** Chờ Admin duyệt.
+
+### 4.5 Lấy danh sách yêu cầu Môi giới `[Auth: Admin]`
+* **Endpoint:** `GET /leads/agent-requests`
+* **Response:** Trả về danh sách kèm thông tin `profiles`.
+
+### 4.6 Duyệt yêu cầu Môi giới `[Auth: Admin]`
+* **Endpoint:** `PUT /leads/agent-requests/:id/status`
+* **Body (JSON):** `{ "status": "approved" }` (hoặc `"rejected"`)
+* **Logic:** Tự động nâng cấp Role thành Agent và tạo hồ sơ Agent rỗng.
+
+
+## 5. Forum (Diễn đàn)
+
+### 5.1 Lấy danh sách bài đã duyệt
+* **Endpoint:** `GET /forum`
+
+### 5.2 Lấy chi tiết Bài viết
+* **Endpoint:** `GET /forum/:id`
+
+### 5.3 Lấy danh sách bài đang chờ duyệt `[Auth: Admin]`
+* **Endpoint:** `GET /forum/pending`
+
+### 5.4 Đăng bài (Có kiểm duyệt) `[Auth]`
+* **Endpoint:** `POST /forum`
+* **Rate Limit:** 1 request / 1 phút.
+* **Body (JSON):** `{ "title": "Bàn về phong thủy", "content": "Nội dung bài..." }`
+
+### 5.5 Admin Duyệt Bài `[Auth: Admin]`
+* **Endpoint:** `PUT /forum/:id/approve`
+* **Logic:** Chuyển status thành `approved` và gửi email thông báo cho Tác giả.
+
+### 5.6 Admin Xóa Bài Viết `[Auth: Admin]`
+* **Endpoint:** `DELETE /forum/:id`
+
+### 5.7 Lấy danh sách Bình luận của Bài viết
+* **Endpoint:** `GET /forum/:postId/comments`
+
+### 5.8 Gửi Bình luận `[Auth]`
+* **Endpoint:** `POST /forum/:postId/comments`
+* **Body (JSON):** `{ "content": "Bài viết rất hay!" }`
+
+### 5.9 Admin Xóa Bình luận `[Auth: Admin]`
+* **Endpoint:** `DELETE /forum/comments/:commentId`
+
+### 5.10 Thích / Bỏ thích Bài viết `[Auth]`
+* **Endpoint:** `POST /forum/:postId/react`
+
+### 5.11 Báo cáo Bài viết vi phạm `[Auth]`
+* **Endpoint:** `POST /forum/:postId/report`
+* **Body (JSON):** `{ "reason": "Nội dung spam / phản cảm" }`
+
+### 5.12 Admin Xem Bài viết bị báo cáo `[Auth: Admin]`
+* **Endpoint:** `GET /forum/reports/pending`
+
+### 5.13 Admin Xử lý báo cáo `[Auth: Admin]`
+* **Endpoint:** `PUT /forum/reports/:reportId/resolve`
+* **Body (JSON):** `{ "action": "dismiss" }` (hoặc `"delete_post"`)
+
+
+## 6. Translations (Đa ngôn ngữ)
+
+### 6.1 Lấy bản dịch của BĐS / Dự án
+* **Endpoint:** `GET /translations?entity_type=property&entity_id=<uuid>&lang_code=en`
+* **Response (Có sẵn bản dịch đã duyệt):**
+```json
+{
+  "status": "success",
+  "fallback": false,
+  "data": { "title": "Vinhome Apartment", "description": "Beautiful lake view" }
+}
+```
+* **Response (Bản dịch chưa duyệt hoặc bị lỗi - CƠ CHẾ FALLBACK):**
+```json
+{
+  "status": "success",
+  "fallback": true,
+  "message": "Bản dịch chưa sẵn sàng. Fallback về ngôn ngữ gốc.",
+  "data": { "title": "Căn hộ Vinhome", "description": "View hồ đẹp" }
+}
+```
+
+### 5.2 Quản lý Bản dịch `[Auth: Admin]`
+*   **Lấy danh sách chờ duyệt:** `GET /translations/pending`
+*   **Duyệt bản dịch máy:** `PUT /translations/:id/approve`
+*   **Admin sửa lại bản dịch (nếu máy dịch sai):** `PUT /translations/:id`
+    *   Body: `{ "translation_data": { "title": "Corrected English Title" } }`
+
+---
+
+## 6. Upload (Lưu trữ ảnh/video)
+
+### 6.1 Upload Media `[Auth]`
+* **Endpoint:** `POST /upload`
+* **Body (Form-Data):** Truyền file vào trường (key) có tên là `file`. Giới hạn 5MB.
+* **Response:** Trả về URL của Cloudinary để Frontend dùng lưu vào bảng `properties` hoặc `property_media`.
+
+---
+
+## 7. System Logs (Nhật ký Hệ thống)
+### 7.1 Lấy danh sách Nhật ký `[Auth: Admin]`
+* **Endpoint:** `GET /logs`
+* **Response:** Trả về 200 hành động (Create/Update/Delete) gần nhất của toàn bộ hệ thống.
+
+---
+
+## 8. Thống kê (Dashboard Stats)
+### 8.1 Lấy dữ liệu Thống kê `[Auth: Admin, Agent]`
+* **Endpoint:** `GET /stats`
+* **Response:** Trả về tổng quan hệ thống. VD: `{ "properties": 10, "leads": 5, "pending_posts": 2, "pending_agents": 1 }`. Agent chỉ thấy thống kê của cá nhân.
+
+---

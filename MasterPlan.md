@@ -62,6 +62,7 @@
 * [x] **Policy leads**:
 * [x] INSERT: Public (khách điền form).
 * [x] SELECT: Admin hoặc Agent có id trùng với `agent_id` của lead đó.
+* [x] **[BỔ SUNG]** Tạo file `database/08_setup_logs.sql` để tạo bảng `system_logs` và cấu hình RLS chỉ Admin xem được.
 
 ### 1.6. Chốt sổ Giai đoạn 1 (Documentation)
 
@@ -77,76 +78,84 @@
 
 ### 2.1. Khởi tạo & Cấu hình (Config)
 
-* [ ] Chạy `npm init -y` tại thư mục `backend/`.
-* [ ] Cài đặt package: `express`, `cors`, `dotenv`, `@supabase/supabase-js`.
-* [ ] Tạo file `backend/.env`. Điền API keys của Supabase, Cloudinary, Resend.
-* [ ] Tạo `backend/src/server.ts`: Khởi tạo Express app, set up CORS.
-* [ ] Tạo `backend/src/config/supabase.ts`: Khởi tạo Supabase client.
-* [ ] Tạo các file config cho `cloudinary.ts` và `resend.ts`.
+* [x] Chạy `npm init -y` tại thư mục `backend/`.
+* [x] Cài đặt package: `express`, `cors`, `dotenv`, `@supabase/supabase-js`.
+* [x] Tạo file `backend/.env`. Điền API keys của Supabase, Cloudinary, Resend.
+* [x] Tạo `backend/src/server.ts`: Khởi tạo Express app, set up CORS.
+* [x] Tạo `backend/src/config/supabase.ts`: Khởi tạo Supabase client.
+* [x] Tạo các file config cho `cloudinary.ts` và `resend.ts`.
 
 ### 2.2. Xây dựng Middleware Phân quyền (RBAC) & Authentication / Authorization
 
-* [ ] Tạo `backend/src/middlewares/auth.middleware.ts`.
-* [ ] Viết hàm `verifyToken`: Lấy Bearer token, giải mã với Supabase Auth.
-* [ ] Tạo `backend/src/middlewares/role.middleware.ts`.
-* [ ] Viết hàm `requireAdmin`: Kiểm tra `req.user.role === 'admin'`.
-* [ ] Viết hàm `requireAgentOrAdmin`: Kiểm tra `req.user.role === 'agent' || 'admin'`.
-* [ ] Xử lý JWT: Giải mã và kiểm tra tính hợp lệ của token.
-* [ ] Permission Check: Viết hàm `canEditProperty(user, propertyId)` để kiểm tra quyền sở hữu trước khi thực hiện logic BUS.
-* [ ] **[LỜI KHUYÊN] Xử lý lỗi tập trung (Global Error Handling)**: Tại lớp BUS, hãy tạo một middleware chuyên biệt để bắt tất cả các lỗi và trả về JSON chuẩn (ví dụ: `{ error: "Message", code: 400 }`). Điều này giúp GUI không bị "crash" khi gặp lỗi bất ngờ.
+* [x] Tạo `backend/src/middlewares/auth.middleware.ts`.
+* [x] Viết hàm `verifyToken`: Lấy Bearer token, giải mã với Supabase Auth.
+* [x] Tạo `backend/src/middlewares/role.middleware.ts`.
+* [x] Viết hàm `requireAdmin`: Kiểm tra `req.user.role === 'admin'`.
+* [x] Viết hàm `requireAgentOrAdmin`: Kiểm tra `req.user.role === 'agent' || 'admin'`.
+* [x] Xử lý JWT: Giải mã và kiểm tra tính hợp lệ của token.
+* [x] Permission Check: Viết hàm `canEditProperty(user, propertyId)` để kiểm tra quyền sở hữu trước khi thực hiện logic BUS.
+* [x] **[LỜI KHUYÊN] Xử lý lỗi tập trung (Global Error Handling)**: Tại lớp BUS, hãy tạo một middleware chuyên biệt để bắt tất cả các lỗi và trả về JSON chuẩn (ví dụ: `{ error: "Message", code: 400 }`). Điều này giúp GUI không bị "crash" khi gặp lỗi bất ngờ.
 > *Ghi chú: Đăng ký `error.middleware.ts` ở dòng cuối cùng của file `server.ts` (sau tất cả các route) để bắt mọi lỗi phát sinh.*
 
 
 
 ### 2.3. Xây dựng Tầng Services & Utils Bổ sung
 
-* [ ] Tạo `backend/src/services/translation.service.ts`: Hàm gọi Google/Libre API.
-* [ ] Tạo `backend/src/services/notification.service.ts`: Hàm gọi Resend gửi mail.
-* [ ] Tạo `backend/src/services/upload.service.ts`: Hàm upload ảnh lên Cloudinary.
-* [ ] Tạo `backend/src/services/censor.service.ts`: Thuật toán Regex dò tìm từ khóa cấm trong nội dung diễn đàn.
-* [ ] **[BỔ SUNG]** Tạo `backend/src/services/log.service.ts`: Lưu vết mọi thao tác của Admin/Agent để quản lý lịch sử hệ thống.
-* [ ] **[BỔ SUNG]** Tạo `backend/src/utils/slug.util.ts`: Hàm chuyển đổi Tiếng Việt có dấu thành slug không dấu cho URL.
+* [x] Tạo `backend/src/services/translation.service.ts`: Hàm gọi Google/Libre API.
+* [x] Tạo `backend/src/services/notification.service.ts`: Hàm gọi Resend gửi mail.
+* [x] Tạo `backend/src/services/upload.service.ts`: Hàm upload ảnh lên Cloudinary.
+* [x] Tạo `backend/src/services/censor.service.ts`: Thuật toán Regex dò tìm từ khóa cấm trong nội dung diễn đàn.
+* [x] **[BỔ SUNG]** Tạo `backend/src/services/log.service.ts`: Lưu vết mọi thao tác của Admin/Agent để quản lý lịch sử hệ thống.
+* [x] **[BỔ SUNG]** Tạo `backend/src/utils/slug.util.ts`: Hàm chuyển đổi Tiếng Việt có dấu thành slug không dấu cho URL.
 
 ### 2.4. Xây dựng Controllers, Logic Core (Nhạc trưởng) & Chi tiết CRUD tương tác
 
-* [ ] Tạo `backend/src/controllers/property.controller.ts`.
-* [ ] Tạo `backend/src/controllers/project.controller.ts`.
-* [ ] Hàm `createProperty`: Nhận JSON data, parse phần dữ liệu linh hoạt nhét vào cột `attributes` (JSONB) trước khi đẩy xuống Supabase.
-* [ ] Hàm `getProperties`: Thêm điều kiện lọc `agent_id` nếu người request là Agent.
-* [ ] Tạo `backend/src/controllers/forum.controller.ts`.
-* [ ] Hàm `createPost`: Gọi `censor.service.ts` trước. Nếu pass, set `status='pending'`, insert xuống Supabase.
-* [ ] Tạo `backend/src/controllers/lead.controller.ts`.
-* [ ] Hàm `submitLead`: Insert DB -> Lấy email Agent/Admin phụ trách -> Gọi `notification.service.ts` bắn email.
-* [ ] **Create Property**:
-* [ ] Kiểm tra file upload có đúng định dạng (jpg, png, mp4).
-* [ ] Tự động tạo slug từ tên dự án (sử dụng `slug.util.ts`).
-* [ ] Gọi API dịch thuật ngay sau khi lưu bản gốc.
+* [x] Tạo `backend/src/controllers/property.controller.ts`.
+* [x] Tạo `backend/src/controllers/project.controller.ts`.
+* [x] Hàm `createProperty`: Nhận JSON data, parse phần dữ liệu linh hoạt nhét vào cột `attributes` (JSONB) trước khi đẩy xuống Supabase.
+* [x] Hàm `getProperties`: Thêm điều kiện lọc `agent_id` nếu người request là Agent.
+* [x] Tạo `backend/src/controllers/forum.controller.ts`.
+* [x] Hàm `createPost`: Gọi `censor.service.ts` trước. Nếu pass, set `status='pending'`, insert xuống Supabase.
+* [x] Tạo `backend/src/controllers/lead.controller.ts`.
+* [x] Hàm `submitLead`: Insert DB -> Lấy email Agent/Admin phụ trách -> Gọi `notification.service.ts` bắn email.
+* [x] **Create Property**:
+* [x] Kiểm tra file upload có đúng định dạng (jpg, png, mp4).
+* [x] Tự động tạo slug từ tên dự án (sử dụng `slug.util.ts`).
+* [x] Gọi API dịch thuật ngay sau khi lưu bản gốc.
 
 
-* [ ] **Read (Public)**: Cache dữ liệu các dự án hot để giảm tải cho Supabase.
-* [ ] **Update**: Gọi `log.service.ts` để lưu lại lịch sử chỉnh sửa - ai đã sửa cái gì vào lúc nào.
-* [ ] **Delete**: Áp dụng "Soft Delete" (chỉ đánh dấu `is_deleted = true`) thay vì xóa vĩnh viễn để tránh mất dữ liệu nhầm.
+* [x] **Read (Public)**: Cache dữ liệu các dự án hot để giảm tải cho Supabase.
+* [x] **Update**: Gọi `log.service.ts` để lưu lại lịch sử chỉnh sửa - ai đã sửa cái gì vào lúc nào.
+* [x] **Delete**: Áp dụng "Soft Delete" (chỉ đánh dấu `is_deleted = true`) thay vì xóa vĩnh viễn để tránh mất dữ liệu nhầm.
 
 ### 2.5. Logic Diễn đàn & Cộng đồng (Advanced)
 
-* [ ] Rate Limiting: Chặn Member spam (Ví dụ: 1 phút chỉ được đăng 1 bình luận).
-* [ ] Auto-Censor Service: Lọc từ thô tục. Chặn chèn link website đối thủ (Regex check).
-* [ ] Notification Logic: Admin duyệt bài -> Gửi mail thông báo cho Member bài đã lên sóng. Có khách điền form -> Bắn thông báo Real-time qua Socket.io hoặc Push Notification.
+* [x] Rate Limiting: Chặn Member spam (Ví dụ: 1 phút chỉ được đăng 1 bình luận).
+* [x] Auto-Censor Service: Lọc từ thô tục. Chặn chèn link website đối thủ (Regex check).
+* [x] Notification Logic: Admin duyệt bài -> Gửi mail thông báo cho Member bài đã lên sóng. Có khách điền form -> Bắn thông báo Real-time qua Socket.io hoặc Push Notification.
 
 ### 2.6. Đa ngôn ngữ (Translation Workflow)
 
-* [ ] Tích hợp cơ chế "Fallback": Nếu bản dịch tiếng Anh chưa có, tự động hiển thị tiếng Việt thay vì để trống.
-* [ ] API Endpoint riêng cho việc Admin "Approve" bản dịch máy.
+* [x] Tích hợp cơ chế "Fallback": Nếu bản dịch tiếng Anh chưa có, tự động hiển thị tiếng Việt thay vì để trống.
+* [x] API Endpoint riêng cho việc Admin "Approve" bản dịch máy.
 
 ### 2.7. Xây dựng Routes (Định tuyến API)
 
-* [ ] Tạo `backend/src/routes/property.routes.ts`: Map endpoint với Controller, gắn middleware auth/role vào.
-* [ ] Tạo `backend/src/routes/project.routes.ts`.
-* [ ] Tạo `backend/src/routes/index.ts`: Gom toàn bộ routes vào tiền tố `/api`. Map vào `server.ts`.
+* [x] Tạo `backend/src/routes/property.routes.ts`: Map endpoint với Controller, gắn middleware auth/role vào.
+* [x] **[BỔ SUNG]** API Lấy danh mục `categories` cho thuộc tính và lưu trữ mảng hình ảnh vào `property_media`.
+* [x] Tạo `backend/src/routes/auth.routes.ts`: API Đăng ký, Đăng nhập, Quên mật khẩu và Đăng xuất.
+* [x] Tạo `backend/src/routes/project.routes.ts`: Phân quyền Admin quản lý.
+* [x] Tạo `backend/src/routes/lead.routes.ts`: Public API cho khách hàng vãng lai gửi yêu cầu.
+* [x] **[BỔ SUNG]** API `GET /leads` và `PUT /leads/:id/status` cho Admin/Agent Dashboard.
+* [x] **[BỔ SUNG]** API `POST /upload` với Multer lưu ảnh/video lên Cloudinary.
+* [x] **[BỔ SUNG]** API `GET /profiles/me` và `PUT /profiles/me` quản lý hồ sơ Agent/Member.
+* [x] **[BỔ SUNG]** API `GET /logs` giúp Admin kiểm soát lịch sử thao tác hệ thống.
+* [x] Tạo `backend/src/routes/forum.routes.ts`: Đăng bài (VerifyToken) và Xem danh sách bài.
+* [x] Tạo `backend/src/routes/index.ts`: Gom toàn bộ routes vào tiền tố `/api`. Map vào `server.ts`.
 
 ### 2.8. Chốt sổ Giai đoạn 2 (Documentation)
-* [ ] Tổng kết danh sách API, luồng Middlewares và Error Handling vào file `docs/PHASE_2_BUS.md`.
-* [ ] Cập nhật tài liệu `docs/API_REFERENCE.md` cho các API đã hoàn thiện.
+* [x] Tổng kết danh sách API, luồng Middlewares và Error Handling vào file `docs/PHASE_2_BUS.md`.
+* [x] Cập nhật tài liệu `docs/API_REFERENCE.md` cho các API đã hoàn thiện.
 
 ---
 
@@ -206,8 +215,8 @@
 * [ ] **Dynamic Component Loader**: Cơ chế load module theme dựa trên config từ database.
 * [ ] **Performance Check**: Lazy loading cho từng theme. **Image Optimization**: Tự động dùng ảnh kích thước nhỏ hơn cho Mobile.
 * [ ] **SEO Meta Tags**: Tự động thay đổi Title, Description, Social Image theo dự án để tối ưu tìm kiếm.
-* [ ] **[LỜI KHUYÊN] Tối ưu SEO (Sitemap & Robots)**: Tạo script tự động tạo file `sitemap.xml` mỗi khi có dự án mới.
-> *Kỹ thuật: `scripts/sitemap-generator.ts` nên chạy sau mỗi lần `property.controller` thực hiện thành công `create` hoặc `delete`.*
+* [x] **[LỜI KHUYÊN] Tối ưu SEO (Sitemap & Robots)**: Xây dựng API tự động render `sitemap.xml` động (On-the-fly) để luôn cập nhật URL BĐS mới nhất cho Google Bot mà không cần lưu file cứng.
+> *Đã hoàn thiện tại Giai đoạn 2 bằng API `GET /api/seo/sitemap.xml` chuẩn kiến trúc Cloud.*
 
 
 

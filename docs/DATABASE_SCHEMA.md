@@ -16,6 +16,7 @@ Tài liệu này mô tả chi tiết cấu trúc cơ sở dữ liệu của nề
 *   **profiles** `1 - N` **leads** *(Agent chăm sóc Lead)*
 *   **profiles** `1 - N` **forum_posts** *(Tác giả bài viết)*
 *   **forum_posts** `1 - N` **forum_comments**
+*   **profiles** `1 - N` **system_logs** *(Nhật ký hoạt động)*
 
 ---
 
@@ -65,6 +66,7 @@ Dữ liệu khách hàng để lại từ Form liên hệ/nhận báo giá.
 *   Thông tin khách: `customer_name`, `customer_email`, `customer_phone`, `message`.
 *   Tham chiếu: `property_id` (BĐS quan tâm), `agent_id` (Môi giới tiếp nhận).
 *   `status`: Trạng thái xử lý (`'new'`, `'contacted'`, ...).
+*   `notes`: Ghi chú nội bộ dành cho Agent/Admin để theo dõi tiến độ tư vấn.
 
 **Bảng `agent_requests`**
 Lưu trữ form yêu cầu trở thành Môi giới. Sử dụng `request_data` (JSONB) để lưu linh hoạt các câu trả lời form.
@@ -75,6 +77,9 @@ Lưu trữ form yêu cầu trở thành Môi giới. Sử dụng `request_data` 
 *   Quản lý thảo luận, liên kết với `author_id` (profiles).
 *   Trường `status` (`'pending'`, `'approved'`) hỗ trợ Admin duyệt nội dung trước khi publish.
 
+**Bảng `forum_reactions` & `forum_reports`**
+*   Hỗ trợ tương tác cộng đồng (Like/Thả tim) và gửi báo cáo vi phạm nội dung rác (Report) dành cho Ban quản trị.
+
 ### 2.5. Hệ thống Đa ngôn ngữ (`06_setup_translations.sql`)
 
 **Bảng `translations`**
@@ -83,6 +88,14 @@ Cho phép dịch động nội dung DB mà không cần sửa bảng gốc.
 *   `entity_id` (UUID): ID của record cụ thể.
 *   `lang_code` (TEXT): Mã ngôn ngữ (`'en'`, `'zh'`).
 *   `translation_data` (JSONB): Nội dung dịch theo dạng Key-Value.
+
+### 2.6. Hệ thống Nhật ký (Logs) (`08_setup_logs.sql`)
+
+**Bảng `system_logs`**
+Lưu trữ toàn bộ các thao tác chỉnh sửa, xóa, thêm mới quan trọng trên hệ thống.
+*   `user_id` (UUID, FK): Người thực hiện (liên kết bảng `profiles`).
+*   `action` (TEXT): Hành động (VD: 'UPDATE_PROPERTY', 'DELETE_LEAD').
+*   `details` (TEXT): Ghi chú chi tiết về hành động đó.
 
 ---
 
@@ -101,3 +114,7 @@ Các chính sách RLS (`07_setup_rls_policies.sql`) đảm bảo an toàn dữ l
     *   `admin`: Được xem tất cả Leads của hệ thống.
     *   `agent`: Chỉ được xem những Leads được gán cho mình (`auth.uid() = agent_id`).
     *   User thường/Khách: Hoàn toàn không được xem.
+
+### Bảng `system_logs`
+*   **SELECT (Read):** Chỉ `admin` được phép xem nhật ký để phục vụ công tác quản trị.
+*   **INSERT / UPDATE / DELETE:** Vô hiệu hóa cho người dùng thường qua API Client. Dữ liệu chỉ được INSERT thông qua Backend (Lớp BUS) dùng `Service_Role_Key` để bỏ qua RLS.

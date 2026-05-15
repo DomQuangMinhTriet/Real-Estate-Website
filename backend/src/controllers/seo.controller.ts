@@ -1,11 +1,7 @@
+import { Request, Response, NextFunction } from 'express';
 import { supabase } from '../config/supabase';
-import fs from 'fs';
-import path from 'path';
 
-/**
- * Hàm tự động sinh file sitemap.xml phục vụ cho SEO Google
- */
-export const generateSitemap = async (): Promise<void> => {
+export const getSitemap = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { data: properties } = await supabase.from('properties').select('slug').eq('is_deleted', false);
     
@@ -20,10 +16,9 @@ export const generateSitemap = async (): Promise<void> => {
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}</urlset>`;
     
-    // Lưu file sitemap vào thư mục frontend/src/assets (Hoặc public tùy cấu trúc Frontend sau này)
-    fs.writeFileSync(path.join(__dirname, '../../sitemap.xml'), sitemap);
-    console.log('✅ [SEO] Sitemap.xml updated successfully');
+    res.header('Content-Type', 'application/xml');
+    res.status(200).send(sitemap);
   } catch (error) {
-    console.error('❌ [SEO Error]', error);
+    next(error);
   }
 };

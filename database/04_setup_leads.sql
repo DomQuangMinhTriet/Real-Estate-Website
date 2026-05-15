@@ -8,7 +8,8 @@ CREATE TABLE public.leads (
     message TEXT,
     property_id UUID REFERENCES public.properties(id) ON DELETE SET NULL,
     agent_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
-    status TEXT DEFAULT 'new'
+    status TEXT DEFAULT 'new',
+    notes TEXT -- Ghi chú nội bộ dành cho Admin/Agent theo dõi tiến độ
 );
 
 -- Bảng agent_requests (Yêu cầu đăng ký từ Agent/Broker)

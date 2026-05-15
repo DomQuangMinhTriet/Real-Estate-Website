@@ -19,7 +19,8 @@ REAL-ESTATE-PLATFORM/
 │   ├── 04_setup_leads.sql            (Leads CRM & Agent Requests)
 │   ├── 05_setup_forum.sql            (Posts, Comments, Moderation status)
 │   ├── 06_setup_translations.sql     (Key-Value dynamic translations)
-│   └── 07_setup_rls_policies.sql     (Row Level Security - Bức tường lửa)
+│   ├── 07_setup_rls_policies.sql     (Row Level Security - Bức tường lửa)
+│   └── 08_setup_logs.sql             (System Logs - Lịch sử thao tác)
 │
 ├── ⚙️ backend/                       <-- LỚP BUS (NODE.JS/RAILWAY)
 │   ├── package.json
@@ -44,17 +45,18 @@ REAL-ESTATE-PLATFORM/
 │   │   │   ├── project.controller.ts
 │   │   │   ├── property.controller.ts
 │   │   │   ├── lead.controller.ts
-│   │   │   └── forum.controller.ts
+│   │   │   ├── forum.controller.ts
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── profile.controller.ts
+│   │   │   ├── stats.controller.ts
+│   │   │   ├── seo.controller.ts
+│   │   │   ├── upload.controller.ts
+│   │   │   └── log.controller.ts
 │   │   ├── routes/
 │   │   │   ├── index.ts
-│   │   │   ├── project.routes.ts
-│   │   │   ├── property.routes.ts
-│   │   │   ├── lead.routes.ts
-│   │   │   └── forum.routes.ts
+│   │   │   └── *.routes.ts           (10 file routes tương ứng với các controller)
 │   │   ├── utils/
 │   │   │   └── slug.util.ts          (Chuyển đổi Tiếng Việt có dấu -> Slug)
-│   │   └── scripts/
-│   │       └── sitemap-generator.ts  (Tự động tạo sitemap.xml cho SEO)
 │
 └── 🎨 frontend/                      <-- LỚP GUI (ANGULAR/VERCEL)
     ├── src/
