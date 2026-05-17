@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../frontend/src/app/admin/blog-manage/blog-manage.component.ts", "../frontend/src/app/admin/blog-manage/blog-editor.component.ts"],
   "exclude": ["node_modules", "dist"]
 }

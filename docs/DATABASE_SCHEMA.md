@@ -17,6 +17,7 @@ Tài liệu này mô tả chi tiết cấu trúc cơ sở dữ liệu của nề
 *   **profiles** `1 - N` **forum_posts** *(Tác giả bài viết)*
 *   **forum_posts** `1 - N` **forum_comments**
 *   **profiles** `1 - N` **system_logs** *(Nhật ký hoạt động)*
+*   **profiles** `1 - N` **blogs** *(Tác giả bài báo)*
 
 ---
 
@@ -97,6 +98,17 @@ Lưu trữ toàn bộ các thao tác chỉnh sửa, xóa, thêm mới quan trọ
 *   `action` (TEXT): Hành động (VD: 'UPDATE_PROPERTY', 'DELETE_LEAD').
 *   `details` (TEXT): Ghi chú chi tiết về hành động đó.
 
+### 2.7. Module Blog (CMS Marketing) (`09_setup_blogs.sql`)
+
+**Bảng `blogs`**
+Lưu trữ bài viết tin tức, bài PR dự án.
+*   `id` (UUID, PK)
+*   `title`, `slug` (UNIQUE)
+*   `property_id` (UUID, FK, nullable): Liên kết bài viết với một BĐS cụ thể.
+*   `author_id` (UUID, FK): Người viết bài (Admin/Agent).
+*   **`content_blocks` (JSONB):** Mảng lưu trữ các khối giao diện (Text, Hình ảnh, Video, Header) theo chuẩn Block-based Editor. Rất linh hoạt để xây dựng bố cục bài viết.
+*   `status` (TEXT): Trạng thái bài viết (`'draft'`, `'pending'`, `'published'`).
+
 ---
 
 ## 3. Chính sách Bảo mật (Row Level Security - RLS)
@@ -104,7 +116,7 @@ Lưu trữ toàn bộ các thao tác chỉnh sửa, xóa, thêm mới quan trọ
 Các chính sách RLS (`07_setup_rls_policies.sql`) đảm bảo an toàn dữ liệu ngay từ tầng Database, phòng chống truy cập trái phép kể cả khi API lộ lọt:
 
 ### Bảng `properties`
-*   **SELECT (Read):** Public. Bất kỳ ai cũng có thể xem bất động sản (chỉ hiển thị bài chưa xóa: `is_deleted = false`).
+*   **SELECT (Read):** Public. Bất kỳ ai cũng có thể xem bất động sản (chỉ hiển thị bài chưa xóa: `is_deleted = false`). Riêng `admin` và tác giả bài viết (`created_by`) được quyền xem toàn bộ (kể cả bài đã xóa mềm) để đảm bảo luồng Soft Delete không vi phạm RLS.
 *   **INSERT (Create):** Yêu cầu xác thực (`authenticated`) VÀ có role là `admin` hoặc `agent`. User thường không thể gọi hàm thêm BĐS.
 *   **UPDATE / DELETE:** Chỉ `admin` (có toàn quyền) HOẶC người dùng có `id` trùng với `created_by` (tác giả bài đăng) mới được phép sửa/xóa.
 
@@ -118,3 +130,7 @@ Các chính sách RLS (`07_setup_rls_policies.sql`) đảm bảo an toàn dữ l
 ### Bảng `system_logs`
 *   **SELECT (Read):** Chỉ `admin` được phép xem nhật ký để phục vụ công tác quản trị.
 *   **INSERT / UPDATE / DELETE:** Vô hiệu hóa cho người dùng thường qua API Client. Dữ liệu chỉ được INSERT thông qua Backend (Lớp BUS) dùng `Service_Role_Key` để bỏ qua RLS.
+
+### Bảng `blogs`
+*   **SELECT (Read):** Public chỉ xem được các bài đã `'published'`. Admin xem được tất cả. Agent xem được bài của mình.
+*   **INSERT / UPDATE / DELETE:** Admin có toàn quyền. Agent chỉ được quyền thao tác trên các bài do chính họ viết (`auth.uid() = author_id`).

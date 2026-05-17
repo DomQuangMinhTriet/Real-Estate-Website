@@ -47,6 +47,23 @@ Base URL: `http://localhost:5000/api` (Đổi thành URL thực tế khi lên Pr
 * **Đổi Role / Phân quyền:** `PUT /profiles/:id/role`
     *   Body: `{ "role": "admin" }` (Các role: `'admin'`, `'agent'`, `'member'`)
 
+### 1.4 Cập nhật & Xóa Bất động sản `[Auth: Admin, Agent]`
+* **Cập nhật:** `PUT /properties/:id` (Gửi lên các field cần đổi).
+* **Xóa mềm (Soft Delete):** `DELETE /properties/:id`. Trả về `{ "status": "success", "message": "Property deleted successfully" }`.
+
+### 1.5 Quản lý Danh mục (Categories)
+*   **Lấy danh sách:** `GET /properties/categories`
+*   **Tạo mới `[Auth: Admin]`:** `POST /properties/categories`
+    *   Body: `{ "name": "Biệt thự nghỉ dưỡng" }`
+*   **Cập nhật `[Auth: Admin]`:** `PUT /properties/categories/:id`
+    *   Body: `{ "name": "Tên mới" }`
+*   **Xóa `[Auth: Admin]`:** `DELETE /properties/categories/:id`
+
+### 1.6 Xóa hình ảnh Bất động sản `[Auth: Admin, Agent]`
+* **Endpoint:** `DELETE /properties/media/:mediaId`
+
+### 1.7 Đặt ảnh làm Ảnh đại diện (Thumbnail) `[Auth: Admin, Agent]`
+* **Endpoint:** `PUT /properties/media/:mediaId/thumbnail`
 ---
 
 ## 2. Properties (Bất động sản)
@@ -55,9 +72,13 @@ Base URL: `http://localhost:5000/api` (Đổi thành URL thực tế khi lên Pr
 * **Endpoint:** `GET /properties`
 * **Query Params:** 
   * `page`, `limit`: Dùng cho Phân trang (Mặc định page=1, limit=10).
-  * `manage=true`: Lọc bài của riêng Agent đang đăng nhập.
+  * `manage=true`: Thêm cờ này khi gọi từ Admin/Agent Dashboard.
+  * `trash=true`: Kết hợp với `manage=true` để lấy danh sách các BĐS đã bị xóa mềm (nằm trong Thùng rác).
   * `category_id`, `project_id`, `min_price`, `max_price`, `search`: Bộ lọc tìm kiếm.
-* **Response:** Trả về danh sách `data` và cấu trúc phân trang `meta: { total, page, limit }`.
+* **Response:** Trả về danh sách `data` (bao gồm thông tin dự án, danh mục, hình ảnh và thông tin chi tiết người môi giới phụ trách trong object `agent: { full_name, phone, email, avatar_url }`) và cấu trúc phân trang `meta: { total, page, limit }`.
+* **Lưu ý Phân quyền:** 
+  * Nếu truyền `manage=true` và gọi bởi Role `agent`, hệ thống tự động lọc CHỈ trả về các BĐS do Agent đó tạo (`created_by`) hoặc phụ trách (`agent_id`).
+  * Gọi bình thường (Public API) sẽ trả về toàn bộ BĐS chưa xóa.
 
 ### 2.2 Lấy chi tiết Bất động sản
 * **Endpoint:** `GET /properties/:slug`
@@ -77,28 +98,11 @@ Base URL: `http://localhost:5000/api` (Đổi thành URL thực tế khi lên Pr
 }
 ```
 
-### 1.4 Cập nhật & Xóa Bất động sản `[Auth: Admin, Agent]`
-* **Cập nhật:** `PUT /properties/:id` (Gửi lên các field cần đổi).
-* **Xóa mềm (Soft Delete):** `DELETE /properties/:id`. Trả về `{ "status": "success", "message": "Property deleted successfully" }`.
+### 2.4 Cập nhật Bất động sản `[Auth: Admin, Agent]`
+* **Endpoint:** `PUT /properties/:id`
+* **Mẹo (Khôi phục BĐS):** Để khôi phục một BĐS từ thùng rác, chỉ cần truyền Body là `{ "is_deleted": false }`.
 
-### 1.5 Quản lý Danh mục (Categories)
-*   **Lấy danh sách:** `GET /properties/categories`
-*   **Tạo mới `[Auth: Admin]`:** `POST /properties/categories`
-    *   Body: `{ "name": "Biệt thự nghỉ dưỡng" }`
-*   **Cập nhật `[Auth: Admin]`:** `PUT /properties/categories/:id`
-    *   Body: `{ "name": "Tên mới" }`
-*   **Xóa `[Auth: Admin]`:** `DELETE /properties/categories/:id`
-
-### 1.6 Xóa hình ảnh Bất động sản `[Auth: Admin, Agent]`
-* **Endpoint:** `DELETE /properties/media/:mediaId`
-
-### 1.7 Đặt ảnh làm Ảnh đại diện (Thumbnail) `[Auth: Admin, Agent]`
-* **Endpoint:** `PUT /properties/media/:mediaId/thumbnail`
-
----
-
-## 2. Projects (Dự án & Theme)
-
+### 2.5 Quản lý Dự án (Projects)
 *   **Lấy danh sách:** `GET /projects`
 *   **Tạo mới `[Auth: Admin]`:** `POST /projects`
     *   Body: `{ "name": "...", "theme_id": "luxury", "description": "..." }`
@@ -123,80 +127,80 @@ Base URL: `http://localhost:5000/api` (Đổi thành URL thực tế khi lên Pr
 }
 ```
 
-### 4.2 Lấy danh sách Khách hàng `[Auth: Admin, Agent]`
+### 3.2 Lấy danh sách Khách hàng `[Auth: Admin, Agent]`
 * **Endpoint:** `GET /leads`
 * **Lưu ý:** Agent chỉ thấy khách của mình. Admin thấy toàn bộ.
 
-### 4.3 Cập nhật Trạng thái & Ghi chú Khách hàng `[Auth: Admin, Agent]`
+### 3.3 Cập nhật Trạng thái & Ghi chú Khách hàng `[Auth: Admin, Agent]`
 * **Endpoint:** `PUT /leads/:id`
 * **Body (JSON):** `{ "status": "contacted", "notes": "Khách hẹn xem nhà lúc 9h sáng thứ 7" }`
 
-### 4.4 Thành viên đăng ký làm Môi giới `[Auth]`
+### 3.4 Thành viên đăng ký làm Môi giới `[Auth]`
 * **Endpoint:** `POST /leads/agent-requests`
 * **Body (JSON):** `{ "request_data": { "experience_years": 3, "area": "Quận 1" } }`
 * **Lưu ý:** Chờ Admin duyệt.
 
-### 4.5 Lấy danh sách yêu cầu Môi giới `[Auth: Admin]`
+### 3.5 Lấy danh sách yêu cầu Môi giới `[Auth: Admin]`
 * **Endpoint:** `GET /leads/agent-requests`
 * **Response:** Trả về danh sách kèm thông tin `profiles`.
 
-### 4.6 Duyệt yêu cầu Môi giới `[Auth: Admin]`
+### 3.6 Duyệt yêu cầu Môi giới `[Auth: Admin]`
 * **Endpoint:** `PUT /leads/agent-requests/:id/status`
 * **Body (JSON):** `{ "status": "approved" }` (hoặc `"rejected"`)
 * **Logic:** Tự động nâng cấp Role thành Agent và tạo hồ sơ Agent rỗng.
 
 
-## 5. Forum (Diễn đàn)
+## 4. Forum (Diễn đàn)
 
-### 5.1 Lấy danh sách bài đã duyệt
+### 4.1 Lấy danh sách bài đã duyệt
 * **Endpoint:** `GET /forum`
 
-### 5.2 Lấy chi tiết Bài viết
+### 4.2 Lấy chi tiết Bài viết
 * **Endpoint:** `GET /forum/:id`
 
-### 5.3 Lấy danh sách bài đang chờ duyệt `[Auth: Admin]`
+### 4.3 Lấy danh sách bài đang chờ duyệt `[Auth: Admin]`
 * **Endpoint:** `GET /forum/pending`
 
-### 5.4 Đăng bài (Có kiểm duyệt) `[Auth]`
+### 4.4 Đăng bài (Có kiểm duyệt) `[Auth]`
 * **Endpoint:** `POST /forum`
 * **Rate Limit:** 1 request / 1 phút.
 * **Body (JSON):** `{ "title": "Bàn về phong thủy", "content": "Nội dung bài..." }`
 
-### 5.5 Admin Duyệt Bài `[Auth: Admin]`
+### 4.5 Admin Duyệt Bài `[Auth: Admin]`
 * **Endpoint:** `PUT /forum/:id/approve`
 * **Logic:** Chuyển status thành `approved` và gửi email thông báo cho Tác giả.
 
-### 5.6 Admin Xóa Bài Viết `[Auth: Admin]`
+### 4.6 Admin Xóa Bài Viết `[Auth: Admin]`
 * **Endpoint:** `DELETE /forum/:id`
 
-### 5.7 Lấy danh sách Bình luận của Bài viết
+### 4.7 Lấy danh sách Bình luận của Bài viết
 * **Endpoint:** `GET /forum/:postId/comments`
 
-### 5.8 Gửi Bình luận `[Auth]`
+### 4.8 Gửi Bình luận `[Auth]`
 * **Endpoint:** `POST /forum/:postId/comments`
 * **Body (JSON):** `{ "content": "Bài viết rất hay!" }`
 
-### 5.9 Admin Xóa Bình luận `[Auth: Admin]`
+### 4.9 Admin Xóa Bình luận `[Auth: Admin]`
 * **Endpoint:** `DELETE /forum/comments/:commentId`
 
-### 5.10 Thích / Bỏ thích Bài viết `[Auth]`
+### 4.10 Thích / Bỏ thích Bài viết `[Auth]`
 * **Endpoint:** `POST /forum/:postId/react`
 
-### 5.11 Báo cáo Bài viết vi phạm `[Auth]`
+### 4.11 Báo cáo Bài viết vi phạm `[Auth]`
 * **Endpoint:** `POST /forum/:postId/report`
 * **Body (JSON):** `{ "reason": "Nội dung spam / phản cảm" }`
 
-### 5.12 Admin Xem Bài viết bị báo cáo `[Auth: Admin]`
+### 4.12 Admin Xem Bài viết bị báo cáo `[Auth: Admin]`
 * **Endpoint:** `GET /forum/reports/pending`
 
-### 5.13 Admin Xử lý báo cáo `[Auth: Admin]`
+### 4.13 Admin Xử lý báo cáo `[Auth: Admin]`
 * **Endpoint:** `PUT /forum/reports/:reportId/resolve`
 * **Body (JSON):** `{ "action": "dismiss" }` (hoặc `"delete_post"`)
 
 
-## 6. Translations (Đa ngôn ngữ)
+## 5. Translations (Đa ngôn ngữ)
 
-### 6.1 Lấy bản dịch của BĐS / Dự án
+### 5.1 Lấy bản dịch của BĐS / Dự án
 * **Endpoint:** `GET /translations?entity_type=property&entity_id=<uuid>&lang_code=en`
 * **Response (Có sẵn bản dịch đã duyệt):**
 ```json
@@ -246,3 +250,30 @@ Base URL: `http://localhost:5000/api` (Đổi thành URL thực tế khi lên Pr
 * **Response:** Trả về tổng quan hệ thống. VD: `{ "properties": 10, "leads": 5, "pending_posts": 2, "pending_agents": 1 }`. Agent chỉ thấy thống kê của cá nhân.
 
 ---
+
+## 9. Blogs (Tin tức & Marketing)
+### 9.1 Lấy danh sách Blog (Public)
+* **Endpoint:** `GET /blogs`
+* **Response:** Trả về danh sách bài viết có `status='published'`.
+
+### 9.2 Lấy danh sách Blog (Quản trị) `[Auth: Admin, Agent]`
+* **Endpoint:** `GET /blogs/manage`
+* **Logic:** Admin xem toàn bộ, Agent xem bài của mình.
+
+### 9.3 Đăng Blog mới `[Auth: Admin, Agent]`
+* **Endpoint:** `POST /blogs`
+* **Body (JSON):**
+```json
+{
+  "title": "Kinh nghiệm đầu tư năm 2026",
+  "content_blocks": [
+    { "type": "text", "value": "Nội dung bài viết..." },
+    { "type": "image", "value": "https://link-anh.com" }
+  ]
+}
+```
+* **Logic:** Admin đăng tự động published, Agent đăng thì pending chờ duyệt.
+
+### 9.4 Duyệt Blog `[Auth: Admin]`
+* **Endpoint:** `PUT /blogs/:id/approve`
+* **Body (JSON):** `{ "status": "published" }`

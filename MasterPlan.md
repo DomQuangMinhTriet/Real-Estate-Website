@@ -63,6 +63,7 @@
 * [x] INSERT: Public (khách điền form).
 * [x] SELECT: Admin hoặc Agent có id trùng với `agent_id` của lead đó.
 * [x] **[BỔ SUNG]** Tạo file `database/08_setup_logs.sql` để tạo bảng `system_logs` và cấu hình RLS chỉ Admin xem được.
+* [x] **[BỔ SUNG]** Tạo file `database/09_setup_blogs.sql` để tạo bảng `blogs` (CMS Marketing) với cấu trúc JSONB cho Layout Builder.
 
 ### 1.6. Chốt sổ Giai đoạn 1 (Documentation)
 
@@ -150,6 +151,7 @@
 * [x] **[BỔ SUNG]** API `POST /upload` với Multer lưu ảnh/video lên Cloudinary.
 * [x] **[BỔ SUNG]** API `GET /profiles/me` và `PUT /profiles/me` quản lý hồ sơ Agent/Member.
 * [x] **[BỔ SUNG]** API `GET /logs` giúp Admin kiểm soát lịch sử thao tác hệ thống.
+* [x] **[BỔ SUNG]** Tạo `backend/src/controllers/blog.controller.ts` và `backend/src/routes/blog.routes.ts`: Quản lý bài viết Blog (Block-based).
 * [x] Tạo `backend/src/routes/forum.routes.ts`: Đăng bài (VerifyToken) và Xem danh sách bài.
 * [x] Tạo `backend/src/routes/index.ts`: Gom toàn bộ routes vào tiền tố `/api`. Map vào `server.ts`.
 
@@ -165,42 +167,69 @@
 
 ### 3.1. Thiết lập Core (Khung xương Angular)
 
-* [ ] Chạy `ng new frontend`. Xóa các file rác.
-* [ ] Khởi tạo thư mục `frontend/src/app/core/`.
-* [ ] **[BỔ SUNG]** Tạo `frontend/src/app/core/models/`: Định nghĩa các Interface toàn cục (`User.ts`, `Property.ts`, `Lead.ts`, `ThemeConfig.ts`).
-* [ ] Tạo `core/services/api.service.ts`: Viết các hàm HttpClient (get, post, put, delete) gọi lên BUS.
-* [ ] Tạo `core/interceptors/auth.interceptor.ts`: Tự động nhét JWT token vào Header của mọi request. Cấu hình vào `app.module.ts`.
-* [ ] Tạo `core/guards/admin.guard.ts` và `agent.guard.ts`: Bảo vệ các route nhạy cảm.
+* [x] Chạy `ng new frontend`. Xóa các file rác.
+* [x] Khởi tạo thư mục `frontend/src/app/core/`.
+* [x] **[BỔ SUNG]** Tạo `frontend/src/app/core/models/`: Định nghĩa các Interface toàn cục (`User.ts`, `Property.ts`, `Lead.ts`, `ThemeConfig.ts`).
+* [x] Tạo `core/services/api.service.ts`: Viết các hàm HttpClient (get, post, put, delete) gọi lên BUS.
+* [x] **[BỔ SUNG]** Tạo `core/services/upload.service.ts`: Xử lý bọc Form-Data để gọi API `POST /upload`.
+* [x] **[BỔ SUNG]** Tạo `core/services/socket.service.ts`: Khởi tạo kết nối `Socket.io` client để lắng nghe các sự kiện real-time (ví dụ: `new_lead`).
+* [x] Tạo `core/interceptors/auth.interceptor.ts`: Tự động nhét JWT token vào Header của mọi request. Cấu hình vào `app.module.ts`.
+* [x] Tạo `core/guards/admin.guard.ts` và `agent.guard.ts`: Bảo vệ các route nhạy cảm.
 
 ### 3.2. Cấu trúc Module Admin Dashboard / Dashboard Quản trị (Admin & Agent)
 
-* [ ] Tạo `frontend/src/app/admin/admin.module.ts` và `admin-routing.module.ts`.
-* [ ] **State Management (NgRx/Signals)**: Quản lý trạng thái dữ liệu mượt mà, không load lại trang.
-* [ ] Tạo `admin/layout/sidebar.component.ts`: Viết logic HTML dùng `*ngIf`: Nếu role là Agent, ẩn tab "Cấu hình Theme", "Duyệt Diễn Đàn".
-* [ ] Tạo `admin/pages/properties-manage/`: Dựng Reactive Form. Viết logic form động: Khi select `type = apartment`, hiện input "Phòng ngủ". Khi `type = townhouse`, hiện input "Mặt tiền".
-* [ ] **Property Editor**: Tích hợp trình soạn thảo văn bản (Rich Text Editor) cho phần mô tả. Chức năng "Preview": Xem thử giao diện Theme sẽ trông như thế nào trước khi đăng.
-* [ ] Tạo `admin/pages/forum-approval/`: Bảng hiển thị danh sách bài pending. Nút "Approve" gọi API PUT sang BUS.
-* [ ] Tạo `admin/pages/translations-manage/`: Layout chia 2 cột để đối chiếu bản dịch gốc - bản dịch máy.
-* [ ] **Lead Management**: Nút "Gọi ngay" (Mở ứng dụng gọi điện trên phone). Ghi chú (Internal Notes) cho mỗi khách hàng để Admin/Agent theo dõi tiến độ tư vấn.
-* [ ] **Agent Portal (Bị hạn chế)**: Chỉ thấy biểu đồ doanh số/leads của cá nhân. Không thấy menu "Quản lý User" hoặc "Cấu hình hệ thống".
+* [x] Tạo `frontend/src/app/admin/admin.module.ts` và `admin-routing.module.ts`.
+* [x] **State Management (NgRx/Signals)**: Tích hợp định tuyến Lazy Loading.
+* [x] Tạo `admin/layout/sidebar.component.ts` (và header): Viết logic HTML dùng `*ngIf`: Nếu role là Agent, ẩn tab "Cấu hình Theme", "Duyệt Diễn Đàn".
+* [x] **Xây dựng Authentication Module (`auth/`)**:
+  * [x] Tạo `AuthService`: Viết các hàm gọi API (`login`, `register`, `logout`, `forgotPassword`, `resetPassword`) và lưu/xóa JWT Token ở LocalStorage.
+  * [x] Dựng `login.component`: Reactive Form đăng nhập. Xử lý lưu `access_token` và redirect vào Dashboard.
+  * [x] Dựng `register.component`: Reactive Form đăng ký (Tích hợp Validator check khớp Mật khẩu). Thông báo người dùng check email.
+  * [x] Dựng `forgot-password.component`: Form nhập email gọi API `/auth/forgot-password`.
+  * [x] Dựng `reset-password.component`: Bắt token từ URL (qua `ActivatedRoute`), form nhập mật khẩu mới gọi API `/auth/reset-password`.
+  * [x] Xử lý Đăng xuất (Logout): Nút trên Header sidebar, gọi API `/auth/logout`, clear token và đẩy về trang đăng nhập.
+* [x] **[BỔ SUNG]** Tạo `admin/pages/account-settings/`: Trang cá nhân cho phép Admin/Agent/Member đổi Avatar, Tên, Số điện thoại (`PUT /profiles/me`). 
+* [x] **[BỔ SUNG]** Tạo form "Đăng ký làm Môi giới" trong Account Settings để Member gọi API `POST /leads/agent-requests`.
+* [x] **[BỔ SUNG]** Tạo `admin/pages/dashboard-stats/`: Dựng biểu đồ tổng quan dựa vào API `GET /stats`. Lắng nghe `Socket.io` để nhảy số Leads. *(Lưu ý UI: Agent chỉ xem được thống kê cá nhân, Admin xem toàn hệ thống).*
+* [x] Tạo `admin/pages/properties-manage/`: Dựng Reactive Form. 
+  * **Quản lý BĐS**: Bảng danh sách phân trang/tìm kiếm (`GET /properties`). Tích hợp Thêm mới (`POST /properties`), Cập nhật (`PUT /properties/:id`) và Xóa mềm (`DELETE /properties/:id`).
+  * Logic form động (JSONB): Khi select loại hình Căn hộ, hiện input "Phòng ngủ", Nhà phố hiện "Mặt tiền".
+  * **[x] Media & Upload**: Giao diện kéo thả file gọi API `POST /upload`, nhận Cloudinary URL lưu vào DB. Cho phép xóa ảnh và đặt làm Thumbnail.
+* [x] Tạo `admin/pages/categories-projects-manage/`: Giao diện CRUD quản lý Danh mục BĐS (`/properties/categories`) và Dự án (`GET`, `POST`, `PUT`, `DELETE /projects`).
+* [x] Tạo `admin/pages/users-manage/`: Giao diện Admin quản lý người dùng, thay đổi Role (`PUT /profiles/:id/role`).
+* [x] Tạo `admin/pages/agent-requests/`: Hiển thị danh sách đăng ký môi giới (`GET /leads/agent-requests`). Nút Duyệt/Từ chối (`PUT /leads/agent-requests/:id/status`).
+* [x] Tạo `admin/pages/forum-approval/`: 
+  * Tab "Bài viết chờ duyệt": Gọi API `GET /forum/pending`, nút "Approve" (`PUT /forum/:id/approve`) và "Xóa bài" (`DELETE /forum/:id`).
+  * Tab "Báo cáo vi phạm": Gọi API `GET /forum/reports/pending` và xử lý (`PUT /forum/reports/:reportId/resolve`).
+  * Tab "Quản lý Bình luận": Nút xóa bình luận rác gọi API `DELETE /forum/comments/:commentId`.
+* [x] Tạo `admin/pages/translations-manage/`: 
+  * Gọi API `GET /translations/pending` để lấy danh sách bản dịch máy đang chờ duyệt.
+  * Layout chia 2 cột để đối chiếu bản dịch gốc - bản dịch máy.
+  * Nút "Duyệt nhanh" (`PUT /translations/:id/approve`) và form Lưu chỉnh sửa nếu máy dịch sai (`PUT /translations/:id`).
+* [x] **Lead Management**: Gọi API `GET /leads`. Thêm tính năng cập nhật `status` và `notes` (ghi chú nội bộ) qua API `PUT /leads/:id`.
+* [x] **[BỔ SUNG] Agent Portal (Hạn chế quyền)**: Ẩn các menu "Quản lý User", "Duyệt Diễn Đàn", "Nhật ký hệ thống", "Dịch thuật" trên Sidebar nếu role là `agent`.
+* [x] **[BỔ SUNG]** Tạo `admin/pages/system-logs/`: Hiển thị lịch sử hoạt động hệ thống (`GET /logs`) dành riêng cho Admin (Bảo vệ bởi AdminGuard).
+* [x] **[BỔ SUNG]** Tạo `admin/pages/blog-manage/`: 
+  * `blog-manage.component`: Danh sách Blog (Admin duyệt, Agent quản lý bài viết của mình).
+  * `blog-editor.component`: Trình soạn thảo Blog dạng kéo thả Component (Layout Builder) lưu vào JSONB, hỗ trợ Live Preview.
 
 ### 3.3. Shared Components & Validators (Bổ sung)
 
-* [ ] **[BỔ SUNG] Skeleton Loader**: Tạo `frontend/src/app/shared/components/skeleton-loader/` để tối ưu UX.
+* [x] **[BỔ SUNG] Skeleton Loader**: Tạo `frontend/src/app/shared/components/skeleton-loader/` để tối ưu UX.
 > *Lưu ý: Tạo các mẫu skeleton riêng cho từng theme để người dùng cảm nhận được layout ngay khi đang load.*
 
-
-* [ ] **[BỔ SUNG] Validators**: Tạo các hàm kiểm tra dữ liệu form (Số điện thoại Việt Nam, định dạng email, mật khẩu mạnh...).
+* [x] **[BỔ SUNG] Validators**: Tạo các hàm kiểm tra dữ liệu form (Số điện thoại Việt Nam, định dạng email, mật khẩu mạnh...).
 
 ### 3.4. Diễn đàn (Cộng đồng)
 
-* [ ] Giao diện đăng bài hỗ trợ upload ảnh (qua Cloudinary).
-* [ ] Hệ thống Reaction (Like/Tim) cho bài viết.
-* [ ] Nút "Báo cáo" (Report) kèm lý do (Spam, nội dung xấu...).
+* [x] **Trang Danh sách Bài viết**: Gọi API `GET /forum` hiển thị luồng thảo luận của cộng đồng.
+* [x] **Trang Chi tiết Bài viết & Bình luận**: Gọi API `GET /forum/:id` và `GET /forum/:postId/comments`.
+* [x] Giao diện đăng bài (`POST /forum`): Giới hạn Rate Limit và hiển thị thông báo "Bài viết đang chờ duyệt".
+* [x] Tính năng Bình luận (`POST /forum/:postId/comments`), Reaction (`POST /forum/:postId/react`) và Báo cáo vi phạm (`POST /forum/:postId/report`).
 
 ### 3.5. Chốt sổ Giai đoạn 3 (Documentation)
-* [ ] Tài liệu hóa luồng hoạt động của Admin/Agent Dashboard và Phân quyền UI vào file `docs/PHASE_3_GUI_ADMIN.md`.
-* [ ] Cập nhật tài liệu hướng dẫn sử dụng cơ bản `docs/USER_MANUAL.md` cho Admin và Agent.
+* [x] Tài liệu hóa luồng hoạt động của Admin/Agent Dashboard và Phân quyền UI vào file `docs/PHASE_3_GUI_ADMIN.md`.
+* [x] Cập nhật tài liệu hướng dẫn sử dụng cơ bản `docs/USER_MANUAL.md` cho Admin và Agent.
 
 ---
 
@@ -215,6 +244,7 @@
 * [ ] **Dynamic Component Loader**: Cơ chế load module theme dựa trên config từ database.
 * [ ] **Performance Check**: Lazy loading cho từng theme. **Image Optimization**: Tự động dùng ảnh kích thước nhỏ hơn cho Mobile.
 * [ ] **SEO Meta Tags**: Tự động thay đổi Title, Description, Social Image theo dự án để tối ưu tìm kiếm.
+* [ ] **[BỔ SUNG] Trang Chi tiết BĐS**: Gọi API `GET /properties/:slug` hiển thị đầy đủ thông tin, `attributes` JSONB và slider ảnh từ `property_media` cho khách hàng.
 * [x] **[LỜI KHUYÊN] Tối ưu SEO (Sitemap & Robots)**: Xây dựng API tự động render `sitemap.xml` động (On-the-fly) để luôn cập nhật URL BĐS mới nhất cho Google Bot mà không cần lưu file cứng.
 > *Đã hoàn thiện tại Giai đoạn 2 bằng API `GET /api/seo/sitemap.xml` chuẩn kiến trúc Cloud.*
 
@@ -224,24 +254,25 @@
 
 * [ ] Tạo `themes/luxury/luxury.module.ts`.
 * [ ] Cấu hình `luxury.component.scss`: Định nghĩa biến CSS riêng (màu đen/vàng đồng, font Serif).
-* [ ] Xây dựng `themes/luxury/components/hero-banner.component.ts`: Code animation mượt mà, ảnh tràn viền.
+* [ ] Xây dựng `themes/luxury/components/hero-banner.component.ts`: Animation mượt, form đăng ký (`POST /leads`) thiết kế sang trọng.
 
 ### 4.3. Triển khai Theme 2: Minimalist (Nhà phố)
 
 * [ ] Tạo `themes/minimalist/minimalist.module.ts`.
 * [ ] Cấu hình `minimalist.component.scss`: Card UI vuông vức, nền trắng/xám nhẹ, font Sans-serif.
-* [ ] Xây dựng layout nhấn mạnh vào thông số diện tích và bản đồ.
+* [ ] Xây dựng layout nhấn mạnh vào thông số diện tích (`attributes` JSONB) và bản đồ.
 
 ### 4.4. Triển khai Theme 3: Eco-Green (Khu sinh thái)
 
 * [ ] Tạo `themes/eco-green/eco-green.module.ts`.
 * [ ] Cấu hình `eco-green.component.scss`: Màu xanh lá chủ đạo, các góc bo tròn (border-radius lớn).
-* [ ] Xây dựng layout nhấn mạnh hình ảnh tiện ích, không gian trống (whitespace).
+* [ ] Xây dựng layout nhấn mạnh hình ảnh tiện ích mở rộng (`attributes` JSONB), không gian trống (whitespace).
 
-### 4.5. Tích hợp Đa ngôn ngữ (Client-side tĩnh)
+### 4.5. Tích hợp Đa ngôn ngữ (Client-side tĩnh & API động)
 
 * [ ] Tạo các file JSON tại `frontend/src/assets/i18n/` (`vi.json`, `en.json`, `zh.json`).
 * [ ] Cài đặt `@ngx-translate/core`. Áp dụng pipe `{{ 'HOME.TITLE' | translate }}` vào cả 3 themes.
+* [ ] **Tích hợp API dịch thuật:** Gọi API `GET /translations`. Xử lý logic **Fallback**: Nếu API trả về `fallback: true`, hiển thị text gốc (Tiếng Việt) kèm thông báo nhỏ (hoặc ẩn) thay vì bị lỗi mất chữ.
 
 ### 4.6. Chốt sổ Giai đoạn 4 (Documentation)
 * [ ] Ghi chú lại logic hoạt động của Multi-Theme Engine, Lazy Loading, và cấu hình Resolver vào file `docs/PHASE_4_GUI_THEMES.md`.

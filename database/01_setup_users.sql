@@ -9,7 +9,8 @@ CREATE TABLE public.profiles (
     full_name TEXT,
     avatar_url TEXT,
     role user_role DEFAULT 'member'::user_role,
-    phone TEXT
+    phone TEXT,
+    email TEXT
 );
 
 -- Bảng agent_profiles: Thông tin chuyên sâu của Agent
@@ -33,8 +34,8 @@ BEGIN
         default_role := 'agent'::public.user_role;
     END IF;
 
-    INSERT INTO public.profiles (id, full_name, role)
-    VALUES (new.id, new.raw_user_meta_data->>'full_name', default_role);
+    INSERT INTO public.profiles (id, full_name, role, email)
+    VALUES (new.id, new.raw_user_meta_data->>'full_name', default_role, new.email);
     RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -42,3 +43,20 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- Trigger tự động (Đồng bộ ngược): Cập nhật raw_user_meta_data khi Admin đổi role trong bảng profiles
+CREATE OR REPLACE FUNCTION public.sync_role_to_auth_users()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF OLD.role IS DISTINCT FROM NEW.role THEN
+        UPDATE auth.users
+        SET raw_user_meta_data = COALESCE(raw_user_meta_data, '{}'::jsonb) || jsonb_build_object('role', NEW.role)
+        WHERE id = NEW.id;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_profile_role_updated
+    AFTER UPDATE OF role ON public.profiles
+    FOR EACH ROW EXECUTE PROCEDURE public.sync_role_to_auth_users();

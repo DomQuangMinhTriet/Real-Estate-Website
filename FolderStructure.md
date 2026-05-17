@@ -11,6 +11,7 @@ REAL-ESTATE-PLATFORM/
 │   ├── PHASE_3_GUI_ADMIN.md          (Chốt sổ GĐ 3: Luồng Admin/Agent Dashboard, Phân quyền UI)
 │   ├── PHASE_4_GUI_THEMES.md         (Chốt sổ GĐ 4: Logic Multi-Theme Engine, Lazy Loading)
 │   └── PHASE_5_DEPLOY_QA.md          (Chốt sổ GĐ 5: Checklist Testing, Config Vercel/Railway)
+│   ├── SYSTEM_ARCHITECTURE_AND_WORKFLOWS.md (Báo cáo Kiến trúc & Luồng kỹ thuật toàn diện GĐ 1-3)
 │
 ├── �️ database/                      <-- LỚP DBO (SUPABASE SQL)
 │   ├── 01_setup_users.sql            (Auth, Roles, Profiles, Triggers)
@@ -21,6 +22,7 @@ REAL-ESTATE-PLATFORM/
 │   ├── 06_setup_translations.sql     (Key-Value dynamic translations)
 │   ├── 07_setup_rls_policies.sql     (Row Level Security - Bức tường lửa)
 │   └── 08_setup_logs.sql             (System Logs - Lịch sử thao tác)
+│   └── 09_setup_blogs.sql            (CMS Blog & Layout Builder JSONB)
 │
 ├── ⚙️ backend/                       <-- LỚP BUS (NODE.JS/RAILWAY)
 │   ├── package.json
@@ -51,10 +53,11 @@ REAL-ESTATE-PLATFORM/
 │   │   │   ├── stats.controller.ts
 │   │   │   ├── seo.controller.ts
 │   │   │   ├── upload.controller.ts
-│   │   │   └── log.controller.ts
+│   │   │   ├── log.controller.ts
+│   │   │   └── blog.controller.ts    (CMS Logic)
 │   │   ├── routes/
 │   │   │   ├── index.ts
-│   │   │   └── *.routes.ts           (10 file routes tương ứng với các controller)
+│   │   │   └── *.routes.ts           (Các file routes)
 │   │   ├── utils/
 │   │   │   └── slug.util.ts          (Chuyển đổi Tiếng Việt có dấu -> Slug)
 │
@@ -71,6 +74,14 @@ REAL-ESTATE-PLATFORM/
     │   │   │   │   └── skeleton-loader/ (Hiệu ứng khung xương chờ load)
     │   │   │   └── validators/
     │   │   │       └── custom.validators.ts (Phone VN, Email, Strong Pass)
+│   │   ├── auth/                 (AUTHENTICATION MODULE)
+│   │   │   ├── login.component.ts
+│   │   │   ├── register.component.ts
+│   │   │   ├── forgot-password.component.ts
+│   │   │   └── reset-password.component.ts
+│   │   ├── forum/                (FORUM MODULE - CỘNG ĐỒNG)
+│   │   │   ├── forum-list.component.ts
+│   │   │   └── forum-detail.component.ts
     │   │   ├── admin/                (DASHBOARD MODULE)
     │   │   │   ├── layout/           (Sidebar, Header với role-based logic)
     │   │   │   ├── pages/
@@ -78,6 +89,7 @@ REAL-ESTATE-PLATFORM/
     │   │   │   │   ├── properties-manage/ (Reactive Dynamic Form)
     │   │   │   │   ├── forum-approval/
     │   │   │   │   └── translations-manage/ (Side-by-side view)
+│   │   │   │   └── blog-manage/         (CMS Block Editor & Preview)
     │   │   │   └── admin-routing.module.ts
     │   │   └── themes/               (THEME ENGINE MODULE)
     │   │       ├── theme.resolver.ts (Fetch theme_id before loading)

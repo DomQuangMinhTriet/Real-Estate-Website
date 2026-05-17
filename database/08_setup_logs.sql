@@ -13,4 +13,9 @@ CREATE POLICY "Logs viewable by Admin only"
 ON public.system_logs FOR SELECT USING (
     auth.uid() IN (SELECT id FROM public.profiles WHERE role = 'admin')
 );
+
+-- Cho phép backend ghi log thay cho các user đã xác thực
+CREATE POLICY "Logs insertable by authenticated users" 
+ON public.system_logs FOR INSERT 
+WITH CHECK (auth.role() = 'authenticated');
 -- Lưu ý: Backend sẽ dùng Service Role (Bỏ qua RLS) để INSERT dữ liệu log

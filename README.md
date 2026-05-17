@@ -49,6 +49,7 @@ Dự án tuân thủ nghiêm ngặt mô hình phân tách 3 lớp:
 ```text
 REAL-ESTATE-PLATFORM/
 ├── docs/         # Tài liệu dự án (API, Database, Hướng dẫn sử dụng)
+│   └── SYSTEM_ARCHITECTURE_AND_WORKFLOWS.md # Kiến trúc hệ thống tổng thể
 ├── database/     # SQL Scripts & RLS Policies (DBO)
 ├── backend/      # Express API, Middlewares, Services (BUS)
 └── frontend/     # Angular App, Theme Engine, Admin Dashboard (GUI)
@@ -78,8 +79,8 @@ ng serve
 📋 Roadmap & Checklist
 Dự án được thực hiện theo quy trình chuyên nghiệp bao gồm 5 giai đoạn chính:
 
-* **Giai đoạn 1: DBO** - Khởi tạo Database Schema, phân quyền và bảo mật RLS tại gốc (Supabase).
-* **Giai đoạn 2: BUS** - Xây dựng API Nhạc trưởng, Core Logic & Global Error Handling (Node.js).
-* **Giai đoạn 3: GUI Admin** - Phát triển Dashboard quản trị phân quyền cho Admin & Agent (Angular).
-* **Giai đoạn 4: GUI Themes** - Triển khai Multi-Theme Engine, SEO & trải nghiệm người dùng tối ưu.
-* **Giai đoạn 5: Deploy & QA** - Kiểm thử bảo mật, QA và Go-live (Vercel & Railway).
+* [x] **Giai đoạn 1: DBO** - Khởi tạo Database Schema, phân quyền và bảo mật RLS tại gốc (Supabase).
+* [x] **Giai đoạn 2: BUS** - Xây dựng API Nhạc trưởng, Core Logic & Global Error Handling (Node.js).
+* [x] **Giai đoạn 3: GUI Admin** - Phát triển Dashboard quản trị phân quyền cho Admin & Agent (Angular).
+* [ ] **Giai đoạn 4: GUI Themes** - Triển khai Multi-Theme Engine, SEO & trải nghiệm người dùng tối ưu.
+* [ ] **Giai đoạn 5: Deploy & QA** - Kiểm thử bảo mật, QA và Go-live (Vercel & Railway).

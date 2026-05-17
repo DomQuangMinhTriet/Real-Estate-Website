@@ -20,6 +20,12 @@ export const register = async (req: Request, res: Response, next: NextFunction):
 
     if (error) throw error;
 
+    // Kiểm tra trường hợp user đã tồn tại (Supabase trả về identities: [])
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      res.status(400).json({ error: 'Email này đã được đăng ký. Vui lòng sử dụng email khác.', code: 400 });
+      return;
+    }
+
     res.status(201).json({ 
       status: 'success', 
       message: 'Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản.',
@@ -71,7 +77,7 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
 
     // Supabase tự động gửi email chứa link reset mật khẩu
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'http://localhost:4200/reset-password', // Redirect về Frontend Angular sau này
+      redirectTo: 'http://localhost:4200/auth/reset-password', // Trỏ đúng về route của Angular
     });
 
     if (error) throw error;

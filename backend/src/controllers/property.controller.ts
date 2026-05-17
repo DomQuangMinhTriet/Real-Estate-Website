@@ -90,16 +90,41 @@ export const deleteCategory = async (req: Request, res: Response, next: NextFunc
 export const getProperties = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const user = req.user;
-    const { manage, category_id, project_id, min_price, max_price, search, page, limit } = req.query;
+    let currentUser = user;
+    const { manage, trash, category_id, project_id, min_price, max_price, search, page, limit } = req.query;
+
+    // Giải mã Token thủ công nếu API GET /properties là public (không chạy qua Middleware verifyToken)
+    if (!currentUser && req.headers.authorization?.startsWith('Bearer ')) {
+      const token = req.headers.authorization.split(' ')[1];
+      if (token) {
+        const { data: authData } = await supabase.auth.getUser(token);
+        if (authData?.user) {
+          const { data: profile } = await supabase.from('profiles').select('role').eq('id', authData.user.id).single();
+          currentUser = { id: authData.user.id, role: profile?.role } as any;
+        }
+      }
+    }
 
     let query = supabase
       .from('properties')
-      .select('*, projects(name, theme_id), categories(name), property_media(media_url, is_thumbnail)', { count: 'exact' })
-      .eq('is_deleted', false);
+      .select('*, projects(name, theme_id), categories(name), property_media(media_url, is_thumbnail), agent:profiles!properties_agent_id_fkey(id, full_name, phone, email, avatar_url)', { count: 'exact' });
 
-    // Dành cho Dashboard: Lọc bài của riêng Agent
-    if (manage === 'true' && user?.role === 'agent') {
-      query = query.eq('agent_id', user.id);
+    // Phân luồng: Nếu gọi từ trang Quản trị (Frontend truyền manage=true)
+    if (manage === 'true') {
+      if (currentUser?.role === 'agent') {
+        // Fix lỗi data cũ: Tìm cả bài do Agent đăng (created_by) hoặc được phân công (agent_id)
+        query = query.or(`agent_id.eq.${currentUser.id},created_by.eq.${currentUser.id}`);
+      }
+      
+      // Cho phép lọc theo trạng thái Thùng rác (Trash)
+      if (trash === 'true') {
+        query = query.eq('is_deleted', true);
+      } else {
+        query = query.eq('is_deleted', false);
+      }
+    } else {
+      // Dành cho Public Website: Chỉ hiển thị bài đang active
+      query = query.eq('is_deleted', false);
     }
 
     // Bộ lọc tìm kiếm cho khách hàng
@@ -238,8 +263,15 @@ export const updateProperty = async (req: Request, res: Response, next: NextFunc
 
     // Nếu có truyền thêm hình ảnh mới khi update
     if (media && Array.isArray(media) && media.length > 0) {
-      const mediaData = media.map((url: string) => ({ property_id: id, media_url: url, is_thumbnail: false }));
-      await supabase.from('property_media').insert(mediaData);
+      // Lấy danh sách ảnh đã có trong DB để không bị insert trùng
+      const { data: existingMedia } = await supabase.from('property_media').select('media_url').eq('property_id', id);
+      const existingUrls = existingMedia?.map(m => m.media_url) || [];
+      
+      const mediaData = media
+        .filter((url: string) => !existingUrls.includes(url))
+        .map((url: string) => ({ property_id: id, media_url: url, is_thumbnail: false }));
+        
+      if (mediaData.length > 0) await supabase.from('property_media').insert(mediaData);
     }
 
     // Lấy lại data mới nhất sau khi update để trả về cho Client
